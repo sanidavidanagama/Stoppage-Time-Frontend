@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { login } from '../api/auth'
+import { LockIcon, UserIcon } from '../components/Icons'
 
 export default function Login() {
   const [username, setUsername] = useState('')
@@ -28,59 +29,125 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+    <div
+      className="min-h-screen flex items-center justify-center p-4"
+      style={{ backgroundColor: '#000000', fontFamily: "'Google Sans', system-ui, sans-serif" }}
+    >
       <div className="w-full max-w-sm">
+
+        {/* Brand mark */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-12 h-12 bg-[#2A398D] rounded-xl mb-3">
-            <span className="text-white text-xl">⚽</span>
+          <div className="flex justify-center mb-5">
+            <img
+              src="/Stoppage Time.png"
+              alt="Stoppage Time"
+              className="h-16 w-auto object-contain"
+            />
           </div>
-          <h1 className="text-2xl font-bold text-[#2A398D]">Stoppage Time</h1>
-          <p className="text-gray-400 text-sm mt-1">Admin Dashboard</p>
+          <p
+            className="text-xs uppercase tracking-widest font-medium"
+            style={{ color: '#474a4a', letterSpacing: '0.2em' }}
+          >
+            Admin Dashboard
+          </p>
         </div>
 
-        <form
-          onSubmit={handleSubmit}
-          className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 space-y-4"
+        {/* Card */}
+        <div
+          className="rounded-2xl p-6 space-y-4"
+          style={{ backgroundColor: '#111111', border: '1px solid #1e1e1e' }}
         >
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+
+          <div className="space-y-1">
+            <label className="block text-xs font-medium uppercase tracking-wide" style={{ color: '#d1d4d1', letterSpacing: '0.08em' }}>
               Username
             </label>
-            <input
-              type="text"
-              value={username}
-              onChange={e => setUsername(e.target.value)}
-              autoComplete="username"
-              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#2A398D] transition"
-              required
-            />
+            <div className="relative">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: '#474a4a' }}>
+                <UserIcon size={16} />
+              </span>
+              <input
+                type="text"
+                value={username}
+                onChange={e => setUsername(e.target.value)}
+                autoComplete="username"
+                placeholder="Enter username"
+                className="w-full pl-9 pr-3 py-2.5 text-sm rounded-lg outline-none transition-all placeholder-[#474a4a]"
+                style={{
+                  backgroundColor: '#0a0a0a',
+                  border: '1px solid #2a2a2a',
+                  color: '#ffffff',
+                }}
+                onFocus={e => {
+                  e.target.style.borderColor = '#2a398d'
+                }}
+                onBlur={e => {
+                  e.target.style.borderColor = '#2a2a2a'
+                }}
+                required
+              />
+            </div>
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+
+          <div className="space-y-1">
+            <label className="block text-xs font-medium uppercase tracking-wide" style={{ color: '#d1d4d1', letterSpacing: '0.08em' }}>
               Password
             </label>
-            <input
-              type="password"
-              value={password}
-              onChange={e => setPassword(e.target.value)}
-              autoComplete="current-password"
-              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#2A398D] transition"
-              required
-            />
+            <div className="relative">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: '#474a4a' }}>
+                <LockIcon size={16} />
+              </span>
+              <input
+                type="password"
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+                autoComplete="current-password"
+                placeholder="Enter password"
+                className="w-full pl-9 pr-3 py-2.5 text-sm rounded-lg outline-none transition-all placeholder-[#474a4a]"
+                style={{
+                  backgroundColor: '#0a0a0a',
+                  border: '1px solid #2a2a2a',
+                  color: '#ffffff',
+                }}
+                onFocus={e => {
+                  e.target.style.borderColor = '#2a398d'
+                }}
+                onBlur={e => {
+                  e.target.style.borderColor = '#2a2a2a'
+                }}
+                required
+              />
+            </div>
           </div>
 
           {error && (
-            <p className="text-[#E61D25] text-sm bg-red-50 rounded-lg px-3 py-2">{error}</p>
+            <p
+              className="text-xs rounded-lg px-3 py-2.5"
+              style={{ color: '#e61d25', backgroundColor: 'rgba(230,29,37,0.08)', border: '1px solid rgba(230,29,37,0.2)' }}
+            >
+              {error}
+            </p>
           )}
 
           <button
-            type="submit"
+            type="button"
+            onClick={handleSubmit}
             disabled={loading}
-            className="w-full bg-[#2A398D] text-white py-2.5 rounded-lg text-sm font-semibold hover:bg-blue-900 disabled:opacity-50 transition-colors"
+            className="w-full py-2.5 rounded-lg text-sm font-semibold transition-all disabled:opacity-50"
+            style={{ backgroundColor: '#2a398d', color: '#ffffff' }}
+            onMouseEnter={e => { if (!loading) e.target.style.backgroundColor = '#1e2d7a' }}
+            onMouseLeave={e => { e.target.style.backgroundColor = '#2a398d' }}
           >
-            {loading ? 'Signing in…' : 'Sign in'}
+            {loading ? 'Signing in...' : 'Sign in'}
           </button>
-        </form>
+        </div>
+
+        <p
+          className="text-center text-xs mt-4"
+          style={{ color: '#474a4a' }}
+        >
+          Stoppage Time &mdash; WC 2026
+        </p>
       </div>
     </div>
   )

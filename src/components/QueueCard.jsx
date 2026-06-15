@@ -1,10 +1,11 @@
 import Countdown from './Countdown'
+import { PlayIcon, TrashIcon, ClockIcon } from './Icons'
 
-const statusStyles = {
-  pending: 'bg-blue-100 text-[#2A398D]',
-  running: 'bg-green-100 text-[#3CAC3B] animate-pulse',
-  done: 'bg-gray-100 text-gray-500',
-  failed: 'bg-red-100 text-[#E61D25]',
+const statusConfig = {
+  pending: { bg: 'rgba(42,57,141,0.15)', text: '#6b82d4', border: 'rgba(42,57,141,0.3)' },
+  running: { bg: 'rgba(60,172,59,0.12)', text: '#3cac3b', border: 'rgba(60,172,59,0.25)', pulse: true },
+  done: { bg: 'rgba(71,74,74,0.15)', text: '#474a4a', border: 'rgba(71,74,74,0.25)' },
+  failed: { bg: 'rgba(230,29,37,0.12)', text: '#e61d25', border: 'rgba(230,29,37,0.25)' },
 }
 
 export default function QueueCard({ entry, onRun, onRemove }) {
@@ -16,39 +17,56 @@ export default function QueueCard({ entry, onRun, onRemove }) {
     (1 - entry.seconds_until_run / totalWindow) * 100
   ))
 
+  const sc = statusConfig[entry.status] || statusConfig.pending
+
   return (
-    <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4">
-      <div className="flex items-start justify-between mb-2">
+    <div
+      className="rounded-xl p-4"
+      style={{ backgroundColor: '#111111', border: '1px solid #1e1e1e' }}
+    >
+      <div className="flex items-start justify-between mb-3">
         <div className="flex-1 min-w-0">
-          <p className="font-semibold text-gray-900 truncate">
-            {entry.home_team} vs {entry.away_team}
+          <p className="font-semibold text-white text-sm truncate">
+            {entry.home_team} <span style={{ color: '#474a4a' }}>vs</span> {entry.away_team}
           </p>
-          <p className="text-xs text-gray-400 mt-0.5">
+          <p className="text-xs mt-0.5" style={{ color: '#474a4a' }}>
             Kickoff: {new Date(entry.kickoff_time).toLocaleString()}
           </p>
         </div>
-        <span className={`ml-3 shrink-0 text-xs font-medium px-2 py-0.5 rounded-full ${statusStyles[entry.status] || 'bg-gray-100 text-gray-500'}`}>
+        <span
+          className={`ml-3 shrink-0 text-xs font-semibold px-2 py-0.5 rounded-full uppercase ${sc.pulse ? 'animate-pulse' : ''}`}
+          style={{
+            backgroundColor: sc.bg,
+            color: sc.text,
+            border: `1px solid ${sc.border}`,
+            letterSpacing: '0.06em',
+            fontSize: '0.6rem',
+          }}
+        >
           {entry.status}
         </span>
       </div>
 
-      <div className="w-full bg-gray-100 rounded-full h-1.5 mb-3">
+      {/* Progress bar */}
+      <div className="w-full rounded-full mb-3" style={{ backgroundColor: '#1e1e1e', height: '3px' }}>
         <div
-          className="bg-[#2A398D] h-1.5 rounded-full transition-all duration-500"
-          style={{ width: `${runProgress}%` }}
+          className="h-full rounded-full transition-all duration-500"
+          style={{ width: `${runProgress}%`, backgroundColor: '#2a398d' }}
         />
       </div>
 
-      <div className="flex items-center gap-4 text-xs text-gray-500 mb-3">
-        <span>
+      {/* Countdown info */}
+      <div className="flex items-center gap-4 text-xs mb-3" style={{ color: '#474a4a' }}>
+        <span className="flex items-center gap-1">
+          <ClockIcon size={11} />
           Run in:{' '}
-          <span className="font-medium text-gray-700">
+          <span className="font-medium" style={{ color: '#d1d4d1' }}>
             <Countdown seconds={entry.seconds_until_run} />
           </span>
         </span>
         <span>
-          Kickoff in:{' '}
-          <span className="font-medium text-gray-700">
+          Kickoff:{' '}
+          <span className="font-medium" style={{ color: '#d1d4d1' }}>
             <Countdown seconds={entry.seconds_until_kickoff} />
           </span>
         </span>
@@ -59,15 +77,19 @@ export default function QueueCard({ entry, onRun, onRemove }) {
           <button
             onClick={onRun}
             disabled={isRunning}
-            className="flex-1 bg-[#3CAC3B] text-white text-xs py-1.5 rounded-lg font-medium hover:bg-green-700 disabled:opacity-40 transition-colors"
+            className="flex-1 flex items-center justify-center gap-1.5 text-white text-xs py-2 rounded-lg font-medium transition-all disabled:opacity-40"
+            style={{ backgroundColor: '#3cac3b' }}
           >
+            <PlayIcon size={11} />
             Run Now
           </button>
           <button
             onClick={onRemove}
             disabled={isRunning}
-            className="flex-1 bg-[#E61D25] text-white text-xs py-1.5 rounded-lg font-medium hover:bg-red-700 disabled:opacity-40 transition-colors"
+            className="flex-1 flex items-center justify-center gap-1.5 text-white text-xs py-2 rounded-lg font-medium transition-all disabled:opacity-40"
+            style={{ backgroundColor: 'transparent', border: '1px solid rgba(230,29,37,0.4)', color: '#e61d25' }}
           >
+            <TrashIcon size={11} />
             Remove
           </button>
         </div>
