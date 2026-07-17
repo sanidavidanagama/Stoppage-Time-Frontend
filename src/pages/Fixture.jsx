@@ -8,6 +8,7 @@ import ProbBar from '../components/ProbBar'
 import { createFixture, getFixture, placeOrder } from '../api/fixture'
 import { isAuthenticated } from '../api/auth'
 import { isTerminalStatus } from '../lib/matchClock'
+import { localDateTimeToUTCISOString, formatUTCPreview } from '../lib/time'
 
 // html2canvas is a hefty dependency only needed once someone actually opens
 // the share card, so keep it out of the main bundle.
@@ -67,7 +68,7 @@ export default function Fixture() {
       away: away.trim(),
       stage,
       agent,
-      kickOffTime: kickOffTime ? new Date(kickOffTime).toISOString() : undefined,
+      kickOffTime: localDateTimeToUTCISOString(kickOffTime),
     })
   }
 
@@ -129,8 +130,8 @@ export default function Fixture() {
                 </button>
               </div>
 
-              <label className="field-label" htmlFor="kickoff">Kickoff Time (optional — disambiguates a rematch)</label>
-              <div className="stage-select" style={{ marginBottom: 22 }}>
+              <label className="field-label" htmlFor="kickoff">Kickoff Time — your local time (optional, disambiguates a rematch)</label>
+              <div className="stage-select" style={{ marginBottom: 6 }}>
                 <input
                   id="kickoff"
                   type="datetime-local"
@@ -138,6 +139,9 @@ export default function Fixture() {
                   onChange={(e) => setKickOffTime(e.target.value)}
                   style={{ background: 'transparent', border: 'none', color: 'var(--chalk)', width: '100%', outline: 'none', fontFamily: 'IBM Plex Sans', fontSize: 15 }}
                 />
+              </div>
+              <div className="fixture-id-preview" style={{ marginBottom: 22, minHeight: 15 }}>
+                {kickOffTime && <>Sent to the API as <span>{formatUTCPreview(kickOffTime)}</span> (UTC)</>}
               </div>
 
               {createMutation.isError && (
