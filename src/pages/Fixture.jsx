@@ -217,6 +217,7 @@ export default function Fixture() {
                           Sign In to Place Order
                         </button>
                       )}
+                      <button className="btn btn-ghost" onClick={() => setShareOpen(true)}>Share</button>
                       <button className="btn btn-ghost" onClick={handleReset}>New Analysis</button>
                     </div>
                   </div>
@@ -224,6 +225,7 @@ export default function Fixture() {
 
                 {status === 'skipped' && (
                   <div className="share-cta">
+                    <button className="btn btn-primary" onClick={() => setShareOpen(true)}>Share</button>
                     <button className="btn btn-ghost" onClick={handleReset}>New Analysis</button>
                   </div>
                 )}
