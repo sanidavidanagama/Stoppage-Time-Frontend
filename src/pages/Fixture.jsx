@@ -27,17 +27,34 @@ const STAGES = [
   'Final',
 ]
 
+// Creating a fixture now requires auth. If someone fills the form out
+// signed-out, save it before sending them to log in so they don't have to
+// retype it — consumed (and cleared) once, on the next mount of the bare
+// form.
+const DRAFT_KEY = 'stoppage-time:fixture-draft'
+
+function readAndClearDraft() {
+  try {
+    const raw = sessionStorage.getItem(DRAFT_KEY)
+    sessionStorage.removeItem(DRAFT_KEY)
+    return raw ? JSON.parse(raw) : {}
+  } catch {
+    return {}
+  }
+}
+
 export default function Fixture() {
   const [searchParams, setSearchParams] = useSearchParams()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const sessionId = searchParams.get('session')
 
-  const [home, setHome] = useState('')
-  const [away, setAway] = useState('')
-  const [stage, setStage] = useState(STAGES[0])
-  const [agent, setAgent] = useState('multi-agent')
-  const [kickOffTime, setKickOffTime] = useState('')
+  const [draft] = useState(readAndClearDraft)
+  const [home, setHome] = useState(draft.home ?? '')
+  const [away, setAway] = useState(draft.away ?? '')
+  const [stage, setStage] = useState(draft.stage ?? STAGES[0])
+  const [agent, setAgent] = useState(draft.agent ?? 'multi-agent')
+  const [kickOffTime, setKickOffTime] = useState(draft.kickOffTime ?? '')
   const [shareOpen, setShareOpen] = useState(false)
 
   const createMutation = useMutation({
@@ -70,6 +87,10 @@ export default function Fixture() {
   })
 
   const handleDiscard = () => {
+    if (!isAuthenticated()) {
+      navigate('/login', { state: { from: `/fixture?session=${sessionId}` } })
+      return
+    }
     if (!window.confirm('Discard this analysis? This can’t be undone.')) return
     discardMutation.mutate()
   }
@@ -84,6 +105,11 @@ export default function Fixture() {
       agent,
       kickOffTime: localDateTimeToUTCISOString(kickOffTime),
     })
+  }
+
+  const handleLockedSubmit = () => {
+    sessionStorage.setItem(DRAFT_KEY, JSON.stringify({ home, away, stage, agent, kickOffTime }))
+    navigate('/login', { state: { from: '/fixture' } })
   }
 
   const handleReset = () => {
@@ -164,10 +190,20 @@ export default function Fixture() {
                 </div>
               )}
 
-              <button type="submit" className="kickoff-btn" disabled={createMutation.isPending}>
-                {createMutation.isPending ? 'Kicking Off…' : 'Kick Off Analysis'}
-              </button>
-              <div className="status-line">Public endpoint — anyone can run analysis. Placing the real order requires sign-in.</div>
+              {isAuthenticated() ? (
+                <button type="submit" className="kickoff-btn" disabled={createMutation.isPending}>
+                  {createMutation.isPending ? 'Kicking Off…' : 'Kick Off Analysis'}
+                </button>
+              ) : (
+                <button type="button" className="kickoff-btn locked" onClick={handleLockedSubmit}>
+                  Sign In to Run Analysis
+                </button>
+              )}
+              <div className="lock-note">
+                {isAuthenticated()
+                  ? 'Signed in — analysis, order confirmation, and discarding are all available.'
+                  : '🔒 Running analysis, placing orders, and discarding all require sign-in.'}
+              </div>
             </form>
           </div>
         )}
@@ -237,7 +273,7 @@ export default function Fixture() {
                       )}
                       <button className="btn btn-ghost" onClick={() => setShareOpen(true)}>Share</button>
                       <button className="btn btn-ghost" disabled={discardMutation.isPending} onClick={handleDiscard}>
-                        {discardMutation.isPending ? 'Discarding…' : 'Discard'}
+                        {discardMutation.isPending ? 'Discarding…' : isAuthenticated() ? 'Discard' : 'Sign In to Discard'}
                       </button>
                       <button className="btn btn-ghost" onClick={handleReset}>New Analysis</button>
                     </div>

@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import Layout from '../components/Layout'
 import Flag from '../components/Flag'
 import { getAwaitingOrders, deleteAwaitingOrder } from '../api/orders'
+import { isAuthenticated } from '../api/auth'
 import { decisionLabel } from '../lib/decision'
 
 export default function AwaitingOrders() {
@@ -22,6 +23,10 @@ export default function AwaitingOrders() {
 
   const handleDiscard = (e, sessionId) => {
     e.stopPropagation()
+    if (!isAuthenticated()) {
+      navigate('/login', { state: { from: '/awaiting-orders' } })
+      return
+    }
     if (!window.confirm('Discard this analysis? This can’t be undone.')) return
     deleteMutation.mutate(sessionId)
   }
@@ -88,7 +93,7 @@ export default function AwaitingOrders() {
                       disabled={discarding}
                       onClick={(e) => handleDiscard(e, sessionId)}
                     >
-                      {discarding ? 'Discarding…' : 'Discard'}
+                      {discarding ? 'Discarding…' : isAuthenticated() ? 'Discard' : '🔒 Sign In'}
                     </button>
                   </div>
                 </div>

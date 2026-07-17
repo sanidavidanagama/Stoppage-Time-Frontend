@@ -136,6 +136,11 @@ section{padding:64px 40px; max-width:1180px; margin:0 auto;}
 .kickoff-btn{width:100%; padding:18px; border-radius:4px; border:none; cursor:pointer; font-family:'Oswald'; font-weight:600; font-size:16px; letter-spacing:0.06em; text-transform:uppercase; background:var(--gold); color:var(--ink); transition:filter .15s ease;}
 .kickoff-btn:hover:not(:disabled){filter:brightness(1.08);}
 .kickoff-btn:disabled{background:var(--panel); color:var(--muted-2); border:1px solid var(--line-strong); cursor:not-allowed;}
+/* .locked is distinct from :disabled — it still needs to be clickable
+   (it sends you to sign in), just styled to look gated rather than the
+   primary gold CTA. */
+.kickoff-btn.locked{background:var(--panel); color:var(--muted-2); border:1px solid var(--line-strong); cursor:pointer;}
+.kickoff-btn.locked:hover{border-color:var(--gold-dim); color:var(--chalk);}
 .lock-note{display:flex; align-items:center; gap:8px; justify-content:center; margin-top:12px; font-size:12px; color:var(--muted-2);}
 .status-line{margin-top:18px; font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--muted-2); text-align:center;}
 .status-line .dot{display:inline-block; width:6px; height:6px; border-radius:50%; background:var(--gold); margin-right:7px; animation:pulse 1.4s infinite;}
