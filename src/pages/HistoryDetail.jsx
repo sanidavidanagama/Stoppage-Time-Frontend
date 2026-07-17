@@ -69,7 +69,7 @@ export default function HistoryDetail() {
             <MatchClock session={session} bet={bet} logs={logs} />
 
             <div className="share-cta">
-              <button className="btn btn-primary" onClick={() => setShareOpen(true)}>Generate Share Card</button>
+              <button className="btn btn-primary" onClick={() => setShareOpen(true)}>Share</button>
             </div>
           </div>
         )}

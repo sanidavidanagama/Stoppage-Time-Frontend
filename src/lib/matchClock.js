@@ -1,26 +1,25 @@
-// Maps a session's pipeline status onto the concept's five-stop "match
-// clock" (Kickoff / 1st Half / Team Talk / 2nd Half / Full Time), and
-// groups agent_logs rows into the three middle stops by tool name, so the
-// same visual works both live (polling) and as historical playback.
+// Builds the pipeline visualization straight from agent_logs — one stop
+// per real step, in the order it actually happened, headed by its own
+// step_type (Observing/Planning/ToolCalling/Thinking/Reflecting) rather
+// than a fixed football-clock metaphor that doesn't fit every run. A
+// trailing synthetic "Result" stop is appended for the final outcome
+// (order placed / skipped / errored) since that isn't itself a logged
+// step but is still worth showing.
 
-export const STOPS = [
-  { key: 'kickoff', label: 'Kickoff', marker: "0'", agent: 'Data pulled' },
-  { key: 'gathering', label: '1st Half', marker: '1H', agent: 'Tactics · News · H2H' },
-  { key: 'reasoning', label: 'Team Talk', marker: 'HT', agent: 'Reasoning Agent' },
-  { key: 'betting', label: '2nd Half', marker: '2H', agent: 'Betting Agent' },
-  { key: 'result', label: 'Full Time', marker: 'FT', agent: 'Order settled' },
-]
+const STEP_TYPE_LABELS = {
+  Observing: 'Observing',
+  Planning: 'Planning',
+  ToolCalling: 'Tool Calling',
+  Thinking: 'Thinking',
+  Reflecting: 'Reflecting',
+}
 
-const STATUS_INDEX = {
-  queued: 0,
-  planning: 0,
-  'tactical analysis': 1,
-  searching: 1,
-  reasoning: 2,
-  betting: 3,
-  awaiting_order: 3,
-  skipped: 4,
-  completed: 4,
+const STEP_TYPE_MARKERS = {
+  Observing: 'OBS',
+  Planning: 'PLN',
+  ToolCalling: 'CALL',
+  Thinking: 'THK',
+  Reflecting: 'RFL',
 }
 
 const TOOL_LABELS = {
@@ -42,37 +41,43 @@ export function toolLabel(tool) {
   return TOOL_LABELS[tool] || tool || 'Agent'
 }
 
-const BETTING_TOOLS = new Set(['betting'])
-const REASONING_TOOLS = new Set(['reasoning', 'unified'])
+export function stepTypeLabel(stepType) {
+  return STEP_TYPE_LABELS[stepType] || stepType || 'Step'
+}
 
-// Everything else (pipeline, planning, tactics, news, h2h, and their
-// tool-call aliases) counts as "gathering context".
-export function groupLogs(logs = []) {
-  const gathering = []
-  const reasoning = []
-  const betting = []
-  for (const log of logs) {
-    const tool = (log.tool || '').toLowerCase()
-    if (BETTING_TOOLS.has(tool)) betting.push(log)
-    else if (REASONING_TOOLS.has(tool)) reasoning.push(log)
-    else gathering.push(log)
-  }
-  return { gathering, reasoning, betting }
+function stepMarker(stepType) {
+  return STEP_TYPE_MARKERS[stepType] || (stepType ? stepType.slice(0, 3).toUpperCase() : '•')
 }
 
 export function isTerminalStatus(status) {
   return ['awaiting_order', 'skipped', 'completed', 'error'].includes(status)
 }
 
-// Which stop index is "current" right now, given the session status and
-// what's actually landed in the logs so far (used to place the marker
-// sensibly on an `error` status, which has no fixed index of its own).
-export function currentStopIndex(status, groups) {
-  if (status === 'error') {
-    if (groups.betting.length) return 3
-    if (groups.reasoning.length) return 2
-    if (groups.gathering.length) return 1
-    return 0
-  }
-  return STATUS_INDEX[status] ?? 0
+function byCreatedAt(a, b) {
+  const ta = a.created_at ? new Date(a.created_at).getTime() : 0
+  const tb = b.created_at ? new Date(b.created_at).getTime() : 0
+  return ta - tb
+}
+
+// One stop per log entry, chronological, plus a trailing "Result" stop.
+export function buildStops(logs = []) {
+  const stops = [...logs].sort(byCreatedAt).map((log) => ({
+    id: log.id,
+    marker: stepMarker(log.step_type),
+    label: stepTypeLabel(log.step_type),
+    subtitle: toolLabel(log.tool),
+    log,
+    isResult: false,
+  }))
+  stops.push({ id: 'result', marker: 'FT', label: 'Result', subtitle: 'Outcome', isResult: true })
+  return stops
+}
+
+// Index of the stop that's "current" right now: the last real log while a
+// run is in flight, or the trailing Result stop once it's terminal. -1
+// means nothing has landed yet (session created, no steps logged so far).
+export function activeStopIndex(status, stops) {
+  const realCount = stops.length - 1
+  if (isTerminalStatus(status)) return stops.length - 1
+  return realCount > 0 ? realCount - 1 : -1
 }

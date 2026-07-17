@@ -38,7 +38,6 @@ const ShareCard = forwardRef(function ShareCard({ session, bet, stage }, ref) {
         <div className="sc-stage">{stageLabel}</div>
         <img src="/Stoppage Time.png" alt="" />
       </div>
-      <div className="perf" />
 
       <div className="sc-teams" style={{ marginTop: 24 }}>
         <div className="sc-team">
@@ -51,6 +50,8 @@ const ShareCard = forwardRef(function ShareCard({ session, bet, stage }, ref) {
           <div className="name">{bet?.away_code || away || 'AWAY'}</div>
         </div>
       </div>
+
+      <div className="perf" />
 
       {bet && (bet.home_probability != null || bet.draw_probability != null || bet.away_probability != null) && (
         <ProbBar

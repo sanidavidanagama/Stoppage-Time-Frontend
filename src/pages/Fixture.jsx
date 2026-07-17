@@ -13,14 +13,15 @@ import { isTerminalStatus } from '../lib/matchClock'
 // the share card, so keep it out of the main bundle.
 const ShareCardModal = lazy(() => import('../components/ShareCardModal'))
 
+// Must match the stage strings the backend's fixture resolver expects
+// exactly (service/schedule.py::find_fixture_by_teams matches on these).
 const STAGES = [
-  'Group Stage — Matchday 1',
-  'Group Stage — Matchday 2',
-  'Group Stage — Matchday 3',
+  'Group Stage',
   'Round of 32',
   'Round of 16',
-  'Quarter-Final',
-  'Semi-Final',
+  'Quarter-finals',
+  'Semi-finals',
+  '3rd Place Final',
   'Final',
 ]
 
@@ -32,7 +33,7 @@ export default function Fixture() {
 
   const [home, setHome] = useState('')
   const [away, setAway] = useState('')
-  const [stage, setStage] = useState(STAGES[1])
+  const [stage, setStage] = useState(STAGES[0])
   const [agent, setAgent] = useState('multi-agent')
   const [kickOffTime, setKickOffTime] = useState('')
   const [shareOpen, setShareOpen] = useState(false)
@@ -225,7 +226,7 @@ export default function Fixture() {
 
                 {status === 'completed' && (
                   <div className="share-cta">
-                    <button className="btn btn-primary" onClick={() => setShareOpen(true)}>Generate Share Card</button>
+                    <button className="btn btn-primary" onClick={() => setShareOpen(true)}>Share</button>
                     <button className="btn btn-ghost" onClick={handleReset}>New Analysis</button>
                   </div>
                 )}

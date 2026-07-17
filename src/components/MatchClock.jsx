@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { STOPS, groupLogs, currentStopIndex, toolLabel } from '../lib/matchClock'
+import { buildStops, activeStopIndex } from '../lib/matchClock'
 
 function fmtTime(iso) {
   if (!iso) return null
@@ -8,47 +8,76 @@ function fmtTime(iso) {
   return d.toLocaleString()
 }
 
-function LogGroup({ logs, emptyText }) {
-  if (!logs.length) {
-    return <p style={{ color: 'var(--muted-2)' }}>{emptyText}</p>
-  }
-  return (
-    <>
-      {logs.map((log) => (
-        <div className="log-entry" key={log.id}>
-          <div className="log-head">
-            <span>{toolLabel(log.tool)}{log.model ? ` · ${log.model}` : ''}</span>
-            {fmtTime(log.created_at) && <span>{fmtTime(log.created_at)}</span>}
-          </div>
-          <div className="log-body">
-            <p>{log.response || log.prompt || '—'}</p>
-          </div>
-        </div>
-      ))}
-      <div className="ledger-line">
-        tool_name={logs[logs.length - 1].tool} · step={logs.length}/{logs.length}
-      </div>
-    </>
+function resultPhase(status, bet) {
+  const decisionGrid = bet && ['home', 'draw', 'away'].includes(bet.decision) && (
+    <div className="decision-grid">
+      <div className="decision-cell"><div className="v">{bet.decision.toUpperCase()}</div><div className="l">Decision</div></div>
+      {bet.edge_pp != null && <div className="decision-cell"><div className="v">{bet.edge_pp}pp</div><div className="l">Edge</div></div>}
+      {bet.stake_usd != null && <div className="decision-cell"><div className="v">${bet.stake_usd}</div><div className="l">Stake</div></div>}
+    </div>
   )
+
+  if (status === 'completed') {
+    return {
+      title: 'Result — Order Settled',
+      meta: bet?.order_id ? `order_id: ${bet.order_id}` : undefined,
+      body: (
+        <>
+          {decisionGrid}
+          <p>
+            Order placed at {bet?.fill_price != null ? `fill price ${bet.fill_price}` : 'market price'}.
+            {bet?.order_status ? ` Status: ${bet.order_status}.` : ''}
+          </p>
+        </>
+      ),
+    }
+  }
+  if (status === 'skipped') {
+    return {
+      title: 'Result — No Bet',
+      body: <p>{bet?.bet_reason || 'The agent decided the edge wasn’t there and passed on this fixture.'}</p>,
+    }
+  }
+  if (status === 'awaiting_order') {
+    return {
+      title: 'Result — Awaiting Confirmation',
+      body: (
+        <>
+          {decisionGrid}
+          <p>A decision has been made but the order hasn’t been placed yet.</p>
+        </>
+      ),
+    }
+  }
+  if (status === 'error') {
+    return {
+      title: 'Result — Error',
+      body: <p style={{ color: 'var(--card-red)' }}>Something failed during this run. Check the steps above for the last successful one.</p>,
+    }
+  }
+  return {
+    title: 'Result',
+    body: <p style={{ color: 'var(--muted-2)' }}>Not reached yet.</p>,
+  }
 }
 
 export default function MatchClock({ session, bet, logs = [] }) {
   const status = session?.status
-  const groups = useMemo(() => groupLogs(logs), [logs])
-  const current = currentStopIndex(status, groups)
-  const terminalDone = status === 'completed' || status === 'skipped'
-  const [selected, setSelected] = useState(current)
+  const stops = useMemo(() => buildStops(logs), [logs])
+  const active = activeStopIndex(status, stops)
+
+  const [selected, setSelected] = useState(active === -1 ? 0 : active)
   const [userPinned, setUserPinned] = useState(false)
 
-  // Auto-advance the selected phase as a live run progresses, unless the
-  // user has clicked a stop themselves to inspect it — then leave it alone.
-  // Adjusting state during render (not in an effect) on a derived-value
-  // change is the pattern React recommends here — see
+  // Auto-advance the selected stop as a live run progresses, unless the
+  // user has clicked a stop themselves to inspect it. Adjusting state
+  // during render (not in an effect) on a derived-value change is the
+  // pattern React recommends here — see
   // https://react.dev/learn/you-might-not-need-an-effect
-  const [prevCurrent, setPrevCurrent] = useState(current)
-  if (current !== prevCurrent) {
-    setPrevCurrent(current)
-    if (!userPinned) setSelected(current)
+  const [prevActive, setPrevActive] = useState(active)
+  if (active !== prevActive) {
+    setPrevActive(active)
+    if (!userPinned && active !== -1) setSelected(active)
   }
 
   const selectStop = (i) => {
@@ -57,107 +86,37 @@ export default function MatchClock({ session, bet, logs = [] }) {
   }
 
   const stopState = (i) => {
-    if (i < current) return 'done'
-    if (i === current) {
-      if (status === 'error') return 'error'
-      if (terminalDone) return 'done'
-      return 'active'
-    }
+    if (active === -1) return ''
+    if (i < active) return 'done'
+    if (i === active) return status === 'error' ? 'error' : 'active'
     return ''
   }
 
-  const renderPhase = () => {
-    switch (STOPS[selected].key) {
-      case 'kickoff':
-        return {
-          title: 'Kickoff',
-          meta: [session?.fixture_name, fmtTime(session?.created_at)].filter(Boolean).join(' · '),
-          body: (
-            <p>
-              Fixture data pulled for <strong>{session?.home_team ?? 'Home'}</strong> vs{' '}
-              <strong>{session?.away_team ?? 'Away'}</strong>
-              {session?.status ? ` — session status: ${session.status}.` : '.'}
-            </p>
-          ),
-        }
-      case 'gathering':
-        return {
-          title: '1st Half — Gathering Context',
-          meta: 'Tactics · News · H2H — independent tool calls, no probabilities shared between them',
-          body: <LogGroup logs={groups.gathering} emptyText="No tactics/news/H2H activity recorded for this run yet." />,
-        }
-      case 'reasoning':
-        return {
-          title: 'Team Talk — Reasoning',
-          meta: 'Combines context into a probability view',
-          body: <LogGroup logs={groups.reasoning} emptyText="Reasoning hasn't run yet." />,
-        }
-      case 'betting':
-        return {
-          title: '2nd Half — Betting Decision',
-          meta: 'Edge gate + stake sizing',
-          body: (
-            <>
-              <LogGroup logs={groups.betting} emptyText="Betting agent hasn't run yet." />
-              {bet && (bet.decision === 'home' || bet.decision === 'draw' || bet.decision === 'away') && (
-                <div className="decision-grid">
-                  <div className="decision-cell"><div className="v">{bet.decision.toUpperCase()}</div><div className="l">Decision</div></div>
-                  {bet.edge_pp != null && <div className="decision-cell"><div className="v">{bet.edge_pp}pp</div><div className="l">Edge</div></div>}
-                  {bet.stake_usd != null && <div className="decision-cell"><div className="v">${bet.stake_usd}</div><div className="l">Stake</div></div>}
-                </div>
-              )}
-            </>
-          ),
-        }
-      case 'result':
-      default:
-        if (status === 'completed') {
-          return {
-            title: 'Full Time — Order Settled',
-            meta: bet?.order_id ? `order_id: ${bet.order_id}` : undefined,
-            body: (
-              <p>
-                Order placed at {bet?.fill_price != null ? `fill price ${bet.fill_price}` : 'market price'}.
-                {bet?.order_status ? ` Status: ${bet.order_status}.` : ''}
-              </p>
-            ),
-          }
-        }
-        if (status === 'skipped') {
-          return {
-            title: 'Full Time — No Bet',
-            body: <p>{bet?.bet_reason || 'The agent decided the edge wasn’t there and passed on this fixture.'}</p>,
-          }
-        }
-        if (status === 'error') {
-          return {
-            title: 'Full Time — Error',
-            body: <p style={{ color: 'var(--card-red)' }}>Something failed during this run. Check the logs above for the last successful step.</p>,
-          }
-        }
-        return {
-          title: 'Full Time',
-          body: <p style={{ color: 'var(--muted-2)' }}>Not reached yet.</p>,
-        }
-    }
-  }
+  const stop = stops[selected]
+  const log = stop?.log
 
-  const phase = renderPhase()
+  const phase = stop?.isResult
+    ? resultPhase(status, bet)
+    : {
+        title: stop?.label,
+        meta: [stop?.subtitle, log?.model, fmtTime(log?.created_at)].filter(Boolean).join(' · '),
+        body: <p>{log?.response || log?.prompt || '—'}</p>,
+      }
 
   return (
     <>
       <div className="clock-track">
-        <div className="clock-line" />
-        <div className="clock-stops">
-          {STOPS.map((stop, i) => (
+        <div className="clock-stops" style={{ gridTemplateColumns: `repeat(${stops.length}, minmax(72px, 1fr))` }}>
+          <div className="clock-line" />
+          {stops.map((s, i) => (
             <div
-              key={stop.key}
+              key={s.id}
               className={`clock-stop ${stopState(i)} ${selected === i ? 'selected' : ''}`}
               onClick={() => selectStop(i)}
             >
-              <div className="marker">{stop.marker}</div>
-              <div className="clock-label">{stop.label}</div>
-              <div className="agent-name">{stop.agent}</div>
+              <div className="marker">{s.marker}</div>
+              <div className="clock-label">{s.label}</div>
+              <div className="agent-name">{s.subtitle}</div>
             </div>
           ))}
         </div>

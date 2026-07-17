@@ -186,11 +186,13 @@ section{padding:64px 40px; max-width:1180px; margin:0 auto;}
 .detail-head .matchup{font-size:24px; display:flex; align-items:center; gap:12px;}
 .detail-head .matchup img, .detail-head .matchup .flag-fallback{width:28px; height:20px;}
 .detail-sub{font-size:12px; color:var(--muted-2); margin-bottom:30px; word-break:break-all;}
-.clock-track{position:relative; margin:0 0 40px;}
-.clock-line{position:absolute; top:19px; left:0; right:0; height:1px; background:var(--line-strong);}
-.clock-stops{display:grid; grid-template-columns:repeat(5,1fr); position:relative;}
-.clock-stop{text-align:center; cursor:pointer;}
-.clock-stop .marker{width:38px; height:38px; margin:0 auto 10px; border-radius:50%; background:var(--night); border:1px solid var(--line-strong); display:flex; align-items:center; justify-content:center; font-family:'IBM Plex Mono'; font-size:11px; color:var(--muted-2); position:relative; z-index:2;}
+.clock-track{margin:0 0 40px; overflow-x:auto; padding-bottom:6px;}
+/* grid-template-columns is set inline per instance — the pipeline is built
+   from however many real steps a run actually logged, not a fixed count */
+.clock-stops{display:grid; position:relative; column-gap:2px;}
+.clock-line{position:absolute; top:19px; left:0; right:0; height:1px; background:var(--line-strong); z-index:1;}
+.clock-stop{text-align:center; cursor:pointer; position:relative; z-index:2; padding:0 2px;}
+.clock-stop .marker{width:38px; height:38px; margin:0 auto 10px; border-radius:50%; background:var(--night); border:1px solid var(--line-strong); display:flex; align-items:center; justify-content:center; font-family:'IBM Plex Mono'; font-size:10px; color:var(--muted-2); position:relative; z-index:2;}
 .clock-stop.active .marker{border-color:var(--gold); color:var(--gold); box-shadow:0 0 14px rgba(231,178,74,0.25);}
 .clock-stop.done .marker{border-color:var(--teal); color:var(--teal);}
 .clock-stop.error .marker{border-color:var(--card-red); color:var(--card-red);}
@@ -229,7 +231,12 @@ footer{padding:50px 40px; text-align:center; color:var(--muted-2); font-size:12p
   position:relative; box-shadow:0 30px 60px rgba(0,0,0,0.5); font-family:'IBM Plex Sans';
   border:1px solid var(--stub-cream-2);
 }
-.share-card .perf{position:absolute; left:0; right:0; height:14px; top:120px; background-image: radial-gradient(circle, rgba(11,14,20,0.85) 4px, transparent 4.2px); background-size:16px 14px; background-position:center;}
+/* Perforation divider — sits in normal flow (not absolutely positioned at
+   a fixed offset) so it always lands between the team row and the
+   probability bar regardless of how tall the content above it is, and
+   bleeds edge-to-edge via negative margins matching the card's own
+   horizontal padding. */
+.share-card .perf{height:14px; margin:20px -24px; background-image: radial-gradient(circle, rgba(11,14,20,0.85) 4px, transparent 4.2px); background-size:16px 14px; background-position:center;}
 .sc-top{display:flex; justify-content:space-between; align-items:center; margin-bottom:18px;}
 .sc-top .sc-stage{font-family:'Oswald'; font-size:10.5px; letter-spacing:0.14em; text-transform:uppercase; color:#6b6252;}
 .sc-top img{width:22px;}
