@@ -128,11 +128,11 @@ export default function Home() {
                   <div className="name">FRA</div>
                 </div>
               </div>
-              <ProbBar home={0.48} draw={0.24} away={0.28} pick="home" compact />
+              <ProbBar home={0.48} draw={0.24} away={0.28} compact />
               <div className="sc-stats">
+                <div className="sc-stat"><div className="v decision-value">ESP</div><div className="l">Decision</div></div>
                 <div className="sc-stat"><div className="v">+5.8pp</div><div className="l">Edge</div></div>
                 <div className="sc-stat"><div className="v">$38</div><div className="l">Stake</div></div>
-                <div className="sc-stat"><div className="v">2.05</div><div className="l">Odds</div></div>
               </div>
             </div>
           </div>

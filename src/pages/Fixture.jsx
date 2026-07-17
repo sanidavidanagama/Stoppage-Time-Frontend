@@ -196,7 +196,6 @@ export default function Fixture() {
                         home={bet.home_probability}
                         draw={bet.draw_probability}
                         away={bet.away_probability}
-                        pick={bet.decision}
                         homeLabel={bet.home_code || session.home_team}
                         awayLabel={bet.away_code || session.away_team}
                       />

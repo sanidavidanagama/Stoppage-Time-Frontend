@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { buildStops, activeStopIndex } from '../lib/matchClock'
+import { decisionLabel } from '../lib/decision'
 
 function fmtTime(iso) {
   if (!iso) return null
@@ -11,7 +12,7 @@ function fmtTime(iso) {
 function resultPhase(status, bet) {
   const decisionGrid = bet && ['home', 'draw', 'away'].includes(bet.decision) && (
     <div className="decision-grid">
-      <div className="decision-cell"><div className="v">{bet.decision.toUpperCase()}</div><div className="l">Decision</div></div>
+      <div className="decision-cell"><div className="v decision-value">{decisionLabel(bet)}</div><div className="l">Decision</div></div>
       {bet.edge_pp != null && <div className="decision-cell"><div className="v">{bet.edge_pp}pp</div><div className="l">Edge</div></div>}
       {bet.stake_usd != null && <div className="decision-cell"><div className="v">${bet.stake_usd}</div><div className="l">Stake</div></div>}
     </div>
