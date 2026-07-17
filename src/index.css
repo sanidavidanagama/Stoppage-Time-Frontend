@@ -322,7 +322,12 @@ footer{padding:50px 40px; text-align:center; color:var(--muted-2); font-size:12p
 
 .sc-probbar-wrap{margin:22px 0 18px;}
 .sc-probbar{display:flex; width:100%; height:22px; border-radius:4px; overflow:hidden; box-shadow:0 0 0 1px rgba(0,0,0,0.1);}
-.sc-probbar .seg{display:flex; align-items:center; justify-content:center; font-family:'IBM Plex Mono'; font-size:10px; font-weight:600; color:#fff; white-space:nowrap; overflow:hidden; position:relative;}
+/* display:block + line-height (not flex align-items) centers the % text —
+   html2canvas doesn't reproduce flex vertical centering reliably, and was
+   rendering this text low in the downloaded PNG despite looking correct
+   in the browser. line-height is set inline per-instance in ProbBar.jsx
+   to match whichever bar height (default/compact) is active. */
+.sc-probbar .seg{display:block; text-align:center; font-family:'IBM Plex Mono'; font-size:10px; font-weight:600; color:#fff; white-space:nowrap; overflow:hidden; position:relative;}
 .sc-probbar .seg.home{background:#2f5d3a;}
 .sc-probbar .seg.draw{background:#8a8064;}
 .sc-probbar .seg.away{background:#7a3030;}
