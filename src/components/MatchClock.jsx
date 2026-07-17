@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { buildStops, activeStopIndex } from '../lib/matchClock'
 import { decisionLabel } from '../lib/decision'
+import LogMarkdown from './LogMarkdown'
 
 function fmtTime(iso) {
   if (!iso) return null
@@ -101,7 +102,7 @@ export default function MatchClock({ session, bet, logs = [] }) {
     : {
         title: stop?.label,
         meta: [stop?.subtitle, log?.model, fmtTime(log?.created_at)].filter(Boolean).join(' · '),
-        body: <p>{log?.response || log?.prompt || '—'}</p>,
+        body: <LogMarkdown>{log?.response || log?.prompt}</LogMarkdown>,
       }
 
   return (

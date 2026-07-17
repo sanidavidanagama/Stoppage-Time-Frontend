@@ -216,10 +216,32 @@ section{padding:64px 40px; max-width:1180px; margin:0 auto;}
 .phase-panel p{font-size:13.5px; line-height:1.7; color:var(--muted); margin:0 0 10px; white-space:pre-wrap;}
 .phase-panel p strong{color:var(--chalk);}
 .ledger-line{font-family:'IBM Plex Mono'; font-size:12px; color:var(--gold-dim); border-left:2px solid var(--gold-dim); padding-left:10px; margin-top:14px;}
-.log-entry{margin-bottom:14px; padding-bottom:14px; border-bottom:1px dashed var(--line);}
-.log-entry:last-child{border-bottom:none; margin-bottom:0; padding-bottom:0;}
-.log-entry .log-head{display:flex; justify-content:space-between; gap:10px; margin-bottom:6px; font-family:'IBM Plex Mono'; font-size:10.5px; color:var(--muted-2); text-transform:uppercase; letter-spacing:0.06em;}
-.log-entry .log-body{max-height:280px; overflow-y:auto;}
+
+/* Markdown-rendered log content (LogMarkdown/react-markdown). Paragraph
+   and <strong> are already covered by .phase-panel p above — this fills
+   in everything else an agent's response might actually use.
+   white-space:normal overrides .phase-panel p's pre-wrap, which was meant
+   for the old raw/unparsed text: on real parsed <p> elements it would
+   turn CommonMark's ordinary soft line-breaks into unwanted hard breaks. */
+.log-markdown p{white-space:normal;}
+.log-markdown em{color:var(--chalk); font-style:italic;}
+.log-markdown ul, .log-markdown ol{margin:0 0 10px; padding-left:22px; color:var(--muted); font-size:13.5px; line-height:1.7;}
+.log-markdown li{margin-bottom:4px;}
+.log-markdown li:last-child{margin-bottom:0;}
+.log-markdown li > p{margin:0;}
+.log-markdown a{color:var(--gold);}
+.log-markdown a:hover{text-decoration:underline;}
+.log-markdown code{font-family:'IBM Plex Mono'; font-size:12px; background:var(--night); border:1px solid var(--line-strong); border-radius:3px; padding:1px 5px; color:var(--teal);}
+.log-markdown pre{font-family:'IBM Plex Mono'; font-size:12px; background:var(--night); border:1px solid var(--line-strong); border-radius:4px; padding:12px 14px; overflow-x:auto; margin:0 0 10px;}
+.log-markdown pre code{background:none; border:none; padding:0; color:var(--chalk);}
+.log-markdown h1, .log-markdown h2, .log-markdown h3, .log-markdown h4, .log-markdown h5, .log-markdown h6{font-family:'Anton'; letter-spacing:0.01em; color:var(--chalk); margin:14px 0 8px;}
+.log-markdown h1:first-child, .log-markdown h2:first-child, .log-markdown h3:first-child{margin-top:0;}
+.log-markdown h1{font-size:18px;}
+.log-markdown h2{font-size:16px;}
+.log-markdown h3, .log-markdown h4, .log-markdown h5, .log-markdown h6{font-size:14px;}
+.log-markdown blockquote{border-left:2px solid var(--gold-dim); padding-left:12px; margin:0 0 10px; color:var(--muted-2); font-style:italic;}
+.log-markdown blockquote p{margin:0;}
+.log-markdown hr{border:none; border-top:1px solid var(--line); margin:14px 0;}
 .decision-grid{display:flex; justify-content:space-around; flex-wrap:wrap; gap:16px; padding:18px 0; margin:18px 0; border-top:1px dashed var(--line-strong); border-bottom:1px dashed var(--line-strong);}
 .decision-cell{text-align:center;}
 .decision-cell .v{font-family:'IBM Plex Mono'; font-size:20px; color:var(--chalk);}
