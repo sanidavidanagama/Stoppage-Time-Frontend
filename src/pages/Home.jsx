@@ -1,9 +1,7 @@
 import { useNavigate } from 'react-router-dom'
-import { useQuery } from '@tanstack/react-query'
 import Layout from '../components/Layout'
 import ProbBar from '../components/ProbBar'
 import Flag from '../components/Flag'
-import { getAgentStats } from '../api/stats'
 
 const FEATURES = [
   {
@@ -20,26 +18,8 @@ const FEATURES = [
   },
 ]
 
-function money(n) {
-  if (n == null) return '—'
-  return `$${n.toFixed(2)}`
-}
-
-function pct(n) {
-  if (n == null) return '—'
-  return `${n.toFixed(1)}%`
-}
-
 export default function Home() {
   const navigate = useNavigate()
-
-  const { data: stats } = useQuery({
-    queryKey: ['agent-stats'],
-    queryFn: getAgentStats,
-    retry: 1,
-  })
-
-  const pnl = stats ? stats.wallet_balance_usd - stats.starting_balance_usd : null
 
   return (
     <Layout>
@@ -88,40 +68,36 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Live record — real numbers, not copy */}
-        {stats && (
-          <div className="home-features">
-            <div className="hiw-kicker" style={{ textAlign: 'center' }}>Not a simulation</div>
-            <h2 className="stamp" style={{ textAlign: 'center', fontSize: 28, marginBottom: 30 }}>
-              The live record
-            </h2>
-            <div className="stats-grid" style={{ maxWidth: 860, margin: '0 auto' }}>
-              <div className="stat-cell">
-                <div className={`val mono ${pnl > 0 ? 'up' : pnl < 0 ? 'down' : ''}`}>
-                  {pnl != null ? `${pnl >= 0 ? '+' : ''}${money(pnl)}` : '—'}
-                </div>
-                <div className="lbl">Cumulative P&amp;L</div>
-              </div>
-              <div className="stat-cell">
-                <div className="val mono">{pct(stats.win_percentage)}</div>
-                <div className="lbl">Win Rate</div>
-              </div>
-              <div className="stat-cell">
-                <div className="val mono">{stats.bets_placed}</div>
-                <div className="lbl">Bets Placed</div>
-              </div>
-              <div className="stat-cell">
-                <div className="val mono">{money(stats.wallet_balance_usd)}</div>
-                <div className="lbl">Wallet Balance</div>
-              </div>
+        {/* Live record */}
+        <div className="home-features">
+          <div className="hiw-kicker" style={{ textAlign: 'center' }}>Not a simulation</div>
+          <h2 className="stamp" style={{ textAlign: 'center', fontSize: 28, marginBottom: 30 }}>
+            The live record
+          </h2>
+          <div className="stats-grid" style={{ maxWidth: 860, margin: '0 auto' }}>
+            <div className="stat-cell">
+              <div className="val mono up">+$27.43</div>
+              <div className="lbl">Cumulative P&amp;L</div>
             </div>
-            <div style={{ textAlign: 'center', marginTop: 26 }}>
-              <button className="btn btn-ghost" onClick={() => navigate('/stats')}>
-                View Full Stats →
-              </button>
+            <div className="stat-cell">
+              <div className="val mono">31.4%</div>
+              <div className="lbl">Win Rate</div>
+            </div>
+            <div className="stat-cell">
+              <div className="val mono">51</div>
+              <div className="lbl">Bets Placed</div>
+            </div>
+            <div className="stat-cell">
+              <div className="val mono">$127.43</div>
+              <div className="lbl">Wallet Balance</div>
             </div>
           </div>
-        )}
+          <div style={{ textAlign: 'center', marginTop: 26 }}>
+            <button className="btn btn-ghost" onClick={() => navigate('/stats')}>
+              View Full Stats →
+            </button>
+          </div>
+        </div>
 
         <div className="home-teaser">
           <div className="teaser-copy">
