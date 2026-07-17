@@ -129,7 +129,7 @@ export default function History() {
         )}
 
         {data && total > LIMIT && (
-          <div style={{ display: 'flex', justifyContent: 'center', gap: 12, marginTop: 28 }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, marginTop: 28 }}>
             <button className="btn btn-ghost" disabled={!hasPrev} onClick={() => setOffset((o) => Math.max(0, o - LIMIT))}>
               ← Prev
             </button>
