@@ -17,11 +17,13 @@ export default function ProbBar({ home, draw, away, homeLabel, awayLabel, compac
     { key: 'away', value: away ?? 0, label: awayLabel || 'Away' },
   ]
 
-  // The % labels are vertically centered via line-height rather than
-  // flexbox align-items — html2canvas (used for the card's PNG export)
-  // doesn't reliably replicate flex vertical centering for text and was
-  // rendering it noticeably low in the downloaded image, even though it
-  // looked fine in the live DOM. line-height centering has no such gap.
+  // The % labels are vertically centered with display:table-cell +
+  // vertical-align:middle (set in CSS) rather than flexbox align-items or
+  // line-height — html2canvas (used for the card's PNG export) doesn't
+  // reliably reproduce either of those for text and was rendering it
+  // noticeably low in the downloaded image, even though it looked correct
+  // in the live DOM. table-cell vertical-align is the one centering
+  // technique that consistently survives html2canvas's rasterization.
   const barHeight = compact ? COMPACT_BAR_HEIGHT : BAR_HEIGHT
 
   return (
@@ -34,7 +36,7 @@ export default function ProbBar({ home, draw, away, homeLabel, awayLabel, compac
             <div
               key={seg.key}
               className={`seg ${seg.key}`}
-              style={{ width: `${width}%`, lineHeight: `${barHeight}px` }}
+              style={{ width: `${width}%` }}
               title={`${seg.label}: ${pct(seg.value)}`}
             >
               {width >= 14 && pct(seg.value)}

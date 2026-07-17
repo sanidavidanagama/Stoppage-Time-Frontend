@@ -12,6 +12,13 @@ export default function ShareCardModal({ open, onClose, session, bet, stage }) {
     if (!cardRef.current) return
     setDownloading(true)
     try {
+      // If a webfont (Anton/Oswald/IBM Plex) hasn't fully finished loading
+      // yet, html2canvas rasterizes text using different metrics than what
+      // the browser is actually showing on screen — this is what causes
+      // text to look correctly centered live but land off-position in the
+      // exported PNG. Waiting on the Font Loading API's readiness signal
+      // before capturing avoids that mismatch.
+      if (document.fonts?.ready) await document.fonts.ready
       const canvas = await html2canvas(cardRef.current, { backgroundColor: null, scale: 3, useCORS: true })
       const link = document.createElement('a')
       const slug = [session?.home_team, session?.away_team].filter(Boolean).join('-').replace(/\s+/g, '') || 'bet'
