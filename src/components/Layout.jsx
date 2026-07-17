@@ -30,17 +30,26 @@ export default function Layout({ children }) {
   const navigate = useNavigate()
   const location = useLocation()
   const [menuOpen, setMenuOpen] = useState(false)
-  const [authed, setAuthed] = useState(isAuthenticated())
+  // isAuthenticated() is a cheap synchronous cookie check — read it fresh on
+  // every render instead of syncing it into state (Layout already re-renders
+  // on every navigation, which is exactly when this needs to be current).
+  const authed = isAuthenticated()
+
+  // Reset the mobile menu when the route changes. Adjusting state during
+  // render (not in an effect) on a prop/derived-value change is the pattern
+  // React recommends for this — see https://react.dev/learn/you-might-not-need-an-effect
+  const [prevPathname, setPrevPathname] = useState(location.pathname)
+  if (location.pathname !== prevPathname) {
+    setPrevPathname(location.pathname)
+    setMenuOpen(false)
+  }
 
   useEffect(() => {
     document.body.dataset.page = ambientPageFor(location.pathname)
-    setMenuOpen(false)
-    setAuthed(isAuthenticated())
   }, [location.pathname])
 
   const handleLogout = () => {
     logout()
-    setAuthed(false)
     navigate('/')
   }
 

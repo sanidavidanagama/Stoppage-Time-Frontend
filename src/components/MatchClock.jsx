@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { STOPS, groupLogs, currentStopIndex, toolLabel } from '../lib/matchClock'
 
 function fmtTime(iso) {
@@ -42,9 +42,14 @@ export default function MatchClock({ session, bet, logs = [] }) {
 
   // Auto-advance the selected phase as a live run progresses, unless the
   // user has clicked a stop themselves to inspect it — then leave it alone.
-  useEffect(() => {
+  // Adjusting state during render (not in an effect) on a derived-value
+  // change is the pattern React recommends here — see
+  // https://react.dev/learn/you-might-not-need-an-effect
+  const [prevCurrent, setPrevCurrent] = useState(current)
+  if (current !== prevCurrent) {
+    setPrevCurrent(current)
     if (!userPinned) setSelected(current)
-  }, [current, userPinned])
+  }
 
   const selectStop = (i) => {
     setSelected(i)
