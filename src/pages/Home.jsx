@@ -115,7 +115,7 @@ export default function Home() {
             <div className="share-card" style={{ width: 220, padding: '16px 15px 14px', transform: 'scale(0.92)' }}>
               <div className="sc-top">
                 <div className="sc-stage">Semi-finals</div>
-                <img src="/Stoppage Time.png" alt="" />
+                <img src="/Stoppage_Time_Logo_Black.png" alt="" />
               </div>
               <div className="sc-teams">
                 <div className="sc-team">

@@ -36,7 +36,7 @@ const ShareCard = forwardRef(function ShareCard({ session, bet, stage }, ref) {
     <div className="share-card" ref={ref}>
       <div className="sc-top">
         <div className="sc-stage">{stageLabel}</div>
-        <img src="/Stoppage Time.png" alt="" />
+        <img src="/Stoppage_Time_Logo_Black.png" alt="" />
       </div>
 
       <div className="sc-teams" style={{ marginTop: 24 }}>
