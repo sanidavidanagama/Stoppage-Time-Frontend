@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import Layout from '../components/Layout'
 import Flag from '../components/Flag'
@@ -74,6 +74,7 @@ export default function History() {
             <div className="section-tag">Every settled &amp; open position</div>
             <h2 className="stamp">Bet History</h2>
           </div>
+          <Link to="/awaiting-orders" className="btn btn-ghost">Awaiting Orders →</Link>
         </div>
 
         <SettlementPanel />

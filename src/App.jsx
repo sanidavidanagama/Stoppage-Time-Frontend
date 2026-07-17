@@ -3,6 +3,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import Home from './pages/Home'
 import Stats from './pages/Stats'
 import Fixture from './pages/Fixture'
+import AwaitingOrders from './pages/AwaitingOrders'
 import History from './pages/History'
 import HistoryDetail from './pages/HistoryDetail'
 import HowItWorks from './pages/HowItWorks'
@@ -25,6 +26,7 @@ export default function App() {
           <Route path="/" element={<Home />} />
           <Route path="/stats" element={<Stats />} />
           <Route path="/fixture" element={<Fixture />} />
+          <Route path="/awaiting-orders" element={<AwaitingOrders />} />
           <Route path="/history" element={<History />} />
           <Route path="/history/:sessionId" element={<HistoryDetail />} />
           <Route path="/how-it-works" element={<HowItWorks />} />

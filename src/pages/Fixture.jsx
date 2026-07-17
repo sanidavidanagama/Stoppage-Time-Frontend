@@ -6,6 +6,7 @@ import Flag from '../components/Flag'
 import MatchClock from '../components/MatchClock'
 import ProbBar from '../components/ProbBar'
 import { createFixture, getFixture, placeOrder } from '../api/fixture'
+import { deleteAwaitingOrder } from '../api/orders'
 import { isAuthenticated } from '../api/auth'
 import { isTerminalStatus } from '../lib/matchClock'
 import { localDateTimeToUTCISOString, formatUTCPreview } from '../lib/time'
@@ -59,6 +60,19 @@ export default function Fixture() {
     mutationFn: () => placeOrder(sessionId),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['fixture', sessionId] }),
   })
+
+  const discardMutation = useMutation({
+    mutationFn: () => deleteAwaitingOrder(sessionId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['awaiting-orders'] })
+      navigate('/awaiting-orders')
+    },
+  })
+
+  const handleDiscard = () => {
+    if (!window.confirm('Discard this analysis? This can’t be undone.')) return
+    discardMutation.mutate()
+  }
 
   const handleSubmit = (e) => {
     e.preventDefault()
@@ -205,6 +219,11 @@ export default function Fixture() {
                     {orderMutation.data?.status === 'error' && (
                       <div className="alert error" style={{ marginTop: 12 }}>{orderMutation.data.reason || 'Order failed.'}</div>
                     )}
+                    {discardMutation.isError && (
+                      <div className="alert error" style={{ marginTop: 12 }}>
+                        Couldn't discard — {discardMutation.error?.response?.data?.detail || 'try again.'}
+                      </div>
+                    )}
 
                     <div className="share-cta">
                       {isAuthenticated() ? (
@@ -217,6 +236,9 @@ export default function Fixture() {
                         </button>
                       )}
                       <button className="btn btn-ghost" onClick={() => setShareOpen(true)}>Share</button>
+                      <button className="btn btn-ghost" disabled={discardMutation.isPending} onClick={handleDiscard}>
+                        {discardMutation.isPending ? 'Discarding…' : 'Discard'}
+                      </button>
                       <button className="btn btn-ghost" onClick={handleReset}>New Analysis</button>
                     </div>
                   </div>

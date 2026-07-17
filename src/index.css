@@ -187,6 +187,9 @@ section{padding:64px 40px; max-width:1180px; margin:0 auto;}
 .result-pill.live{color:var(--gold); border:1px solid rgba(231,178,74,0.45);}
 .stub-stub .pl{font-family:'IBM Plex Mono'; font-size:15px;}
 .stub-stub .pl.up{color:var(--teal);} .stub-stub .pl.down{color:var(--card-red);}
+.discard-btn{background:none; border:none; color:var(--muted-2); font-family:'IBM Plex Mono'; font-size:10px; letter-spacing:0.06em; text-transform:uppercase; cursor:pointer; padding:2px 0;}
+.discard-btn:hover:not(:disabled){color:var(--card-red);}
+.discard-btn:disabled{opacity:0.5; cursor:not-allowed;}
 
 /* ---------- DETAIL (match clock) ---------- */
 .detail-card{background:var(--night-2); border:1px solid var(--line); border-radius:6px; padding:36px; margin-top:6px;}

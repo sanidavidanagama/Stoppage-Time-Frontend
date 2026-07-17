@@ -6,6 +6,7 @@ const navItems = [
   { to: '/', label: 'Home', end: true },
   { to: '/stats', label: 'Stats' },
   { to: '/fixture', label: 'Fixture Analysis' },
+  { to: '/awaiting-orders', label: 'Awaiting Orders' },
   { to: '/history', label: 'Bet History' },
   { to: '/how-it-works', label: 'How It Works' },
 ]
@@ -15,6 +16,7 @@ const AMBIENT_PAGE = {
   '/': 'home',
   '/stats': 'stats',
   '/fixture': 'fixture',
+  '/awaiting-orders': 'history',
   '/history': 'history',
   '/how-it-works': 'teamsheet',
   '/login': 'login',
