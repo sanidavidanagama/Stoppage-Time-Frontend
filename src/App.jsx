@@ -1,11 +1,12 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import ProtectedRoute from './components/ProtectedRoute'
+import Home from './pages/Home'
 import Stats from './pages/Stats'
+import Fixture from './pages/Fixture'
+import History from './pages/History'
+import HistoryDetail from './pages/HistoryDetail'
+import TeamSheet from './pages/TeamSheet'
 import Login from './pages/Login'
-import Queue from './pages/Queue'
-import Bets from './pages/Bets'
-import Logs from './pages/Logs'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -21,32 +22,13 @@ export default function App() {
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<Stats />} />
+          <Route path="/" element={<Home />} />
+          <Route path="/stats" element={<Stats />} />
+          <Route path="/fixture" element={<Fixture />} />
+          <Route path="/history" element={<History />} />
+          <Route path="/history/:sessionId" element={<HistoryDetail />} />
+          <Route path="/team-sheet" element={<TeamSheet />} />
           <Route path="/login" element={<Login />} />
-          <Route
-            path="/queue"
-            element={
-              <ProtectedRoute>
-                <Queue />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/bets"
-            element={
-              <ProtectedRoute>
-                <Bets />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/logs"
-            element={
-              <ProtectedRoute>
-                <Logs />
-              </ProtectedRoute>
-            }
-          />
         </Routes>
       </BrowserRouter>
     </QueryClientProvider>
