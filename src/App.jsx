@@ -5,7 +5,7 @@ import Stats from './pages/Stats'
 import Fixture from './pages/Fixture'
 import History from './pages/History'
 import HistoryDetail from './pages/HistoryDetail'
-import TeamSheet from './pages/TeamSheet'
+import HowItWorks from './pages/HowItWorks'
 import Login from './pages/Login'
 
 const queryClient = new QueryClient({
@@ -27,7 +27,7 @@ export default function App() {
           <Route path="/fixture" element={<Fixture />} />
           <Route path="/history" element={<History />} />
           <Route path="/history/:sessionId" element={<HistoryDetail />} />
-          <Route path="/team-sheet" element={<TeamSheet />} />
+          <Route path="/how-it-works" element={<HowItWorks />} />
           <Route path="/login" element={<Login />} />
         </Routes>
       </BrowserRouter>

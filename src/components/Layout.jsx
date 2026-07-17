@@ -7,7 +7,7 @@ const navItems = [
   { to: '/stats', label: 'Stats' },
   { to: '/fixture', label: 'Fixture Analysis' },
   { to: '/history', label: 'Bet History' },
-  { to: '/team-sheet', label: 'Team Sheet' },
+  { to: '/how-it-works', label: 'How It Works' },
 ]
 
 // data-page drives the ambient background gradient per route (see index.css)
@@ -16,7 +16,7 @@ const AMBIENT_PAGE = {
   '/stats': 'stats',
   '/fixture': 'fixture',
   '/history': 'history',
-  '/team-sheet': 'teamsheet',
+  '/how-it-works': 'teamsheet',
   '/login': 'login',
 }
 
