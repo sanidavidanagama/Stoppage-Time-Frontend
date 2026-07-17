@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import Layout from '../components/Layout'
+import Flag from '../components/Flag'
 
 const AGENTS = [
   {
@@ -62,6 +63,37 @@ const DAY_STEPS = [
   },
 ]
 
+const JUMP_LINKS = [
+  { href: '#the-wall', label: 'The Wall' },
+  { href: '#pipeline', label: 'The Pipeline' },
+  { href: '#two-modes', label: 'Two Modes' },
+  { href: '#timeline', label: 'A Day In The Life' },
+  { href: '#sources', label: 'Source' },
+]
+
+// A purely decorative strip — the app already has flag data for every FIFA
+// side (src/data/teamFlags.js), so a scrolling ribbon of them is a free way
+// to make a text-heavy page feel like it's actually about the World Cup.
+const MARQUEE_TEAMS = [
+  'Brazil', 'Argentina', 'France', 'Germany', 'England', 'Spain', 'Portugal',
+  'Netherlands', 'Italy', 'Belgium', 'Croatia', 'Uruguay', 'USA', 'Mexico',
+  'Japan', 'South Korea', 'Morocco', 'Senegal', 'Nigeria', 'Ghana',
+  'Australia', 'Canada', 'Colombia', 'Switzerland',
+]
+
+function FlagMarquee() {
+  const teams = [...MARQUEE_TEAMS, ...MARQUEE_TEAMS]
+  return (
+    <div className="flag-marquee">
+      <div className="flag-marquee-track">
+        {teams.map((team, i) => (
+          <Flag key={`${team}-${i}`} team={team} />
+        ))}
+      </div>
+    </div>
+  )
+}
+
 export default function HowItWorks() {
   return (
     <Layout>
@@ -72,6 +104,14 @@ export default function HowItWorks() {
             <h2 className="stamp">How It Works</h2>
           </div>
         </div>
+
+        <FlagMarquee />
+
+        <nav className="hiw-jumpnav">
+          {JUMP_LINKS.map((j) => (
+            <a key={j.href} href={j.href}>{j.label}</a>
+          ))}
+        </nav>
 
         {/* 1. What this is */}
         <div className="hiw-section">
@@ -86,7 +126,7 @@ export default function HowItWorks() {
         </div>
 
         {/* 2. The one rule everything is built around */}
-        <div className="hiw-section">
+        <div className="hiw-section hiw-panel" id="the-wall">
           <div className="hiw-kicker">The one rule</div>
           <h3>It never gets to peek at the answer first</h3>
           <p className="hiw-lede">
@@ -134,7 +174,7 @@ export default function HowItWorks() {
         </div>
 
         {/* 3. Meet the agents */}
-        <div className="hiw-section">
+        <div className="hiw-section hiw-panel" id="pipeline">
           <div className="hiw-kicker">The pipeline</div>
           <h3>Five specialists, each doing one job</h3>
           <p className="hiw-lede">None of them do each other’s jobs.</p>
@@ -144,16 +184,14 @@ export default function HowItWorks() {
               <div className="agent-card" key={a.name}>
                 <div className="ac-name">{a.name}</div>
                 <div className="ac-job">{a.job}</div>
-                <div className={`ac-market ${a.seesMarket ? 'yes' : 'no'}`}>
-                  Sees the market: {a.seesMarket ? 'Yes' : 'No'}
-                </div>
+                {a.seesMarket && <div className="ac-market yes">Sees the market</div>}
               </div>
             ))}
           </div>
         </div>
 
         {/* 4. Two ways it makes a decision */}
-        <div className="hiw-section">
+        <div className="hiw-section hiw-panel" id="two-modes">
           <div className="hiw-kicker">Two shapes, one discipline</div>
           <h3>Two ways it makes a decision</h3>
           <p className="hiw-lede">
@@ -186,7 +224,7 @@ export default function HowItWorks() {
         </div>
 
         {/* 5. A day in the life of a bet */}
-        <div className="hiw-section">
+        <div className="hiw-section hiw-panel" id="timeline">
           <div className="hiw-kicker">Start to finish</div>
           <h3>A day in the life of a bet</h3>
           <p className="hiw-lede">Roughly what happens, in order, for one real fixture.</p>
@@ -213,38 +251,7 @@ export default function HowItWorks() {
           </div>
         </div>
 
-        {/* 6. Keeping itself honest */}
-        <div className="hiw-section">
-          <div className="hiw-kicker">Accountability</div>
-          <h3>Keeping itself honest</h3>
-          <p className="hiw-lede">
-            Every single step above gets written down twice: once to the agent’s own private
-            record, and once to the competition’s official reasoning ledger — a public,
-            standardized trail anyone judging the competition can inspect. Nothing about the
-            reasoning is hidden after the fact. If a decision was good, that’s visible. If it
-            wasn’t, that’s visible too.
-          </p>
-
-          <div className="ledger-diagram">
-            <div className="principle-card highlight" style={{ maxWidth: 220 }}>
-              <div className="pc-label">Every Step</div>
-              <div className="pc-note">Written down the moment it happens</div>
-            </div>
-            <div className="ledger-arrows"><span>↓</span><span>↓</span></div>
-            <div className="ledger-destinations">
-              <div className="principle-card">
-                <div className="pc-label">Private Record</div>
-                <div className="pc-note">The agent’s own internal log</div>
-              </div>
-              <div className="principle-card">
-                <div className="pc-label">Public Ledger</div>
-                <div className="pc-note">What anyone judging the competition can inspect</div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* 7. Real stakes, real lessons */}
+        {/* 6. Real stakes, real lessons */}
         <div className="hiw-section">
           <div className="hiw-kicker">Not a simulation</div>
           <h3>Real stakes, real lessons</h3>
@@ -259,21 +266,23 @@ export default function HowItWorks() {
           </p>
         </div>
 
-        {/* 8. Source */}
-        <div className="hiw-section">
+        {/* 7. Source */}
+        <div className="hiw-section hiw-panel" id="sources">
           <div className="hiw-kicker">Source</div>
           <h3>Look for yourself</h3>
           <ul className="hiw-sources">
             <li>
               <a href="https://github.com/sanidavidanagama/Stoppage-Time" target="_blank" rel="noreferrer">
-                → GitHub repository
+                → github.com/sanidavidanagama/Stoppage-Time
               </a>
             </li>
             <li>
               <Link to="/stats">→ Live stats &amp; current record</Link>
             </li>
             <li>
-              <span className="pending">→ Stair AI World Cup Arena — link coming soon</span>
+              <a href="https://stair-ai.com/arena" target="_blank" rel="noreferrer">
+                → stair-ai.com/arena — the competition itself
+              </a>
             </li>
           </ul>
         </div>

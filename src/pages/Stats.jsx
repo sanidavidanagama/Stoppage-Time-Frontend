@@ -59,7 +59,7 @@ export default function Stats() {
       <section className="page-fade">
         <div className="section-head">
           <div>
-            <div className="section-tag">No sign-in required</div>
+            <div className="section-tag">The agent's real-money track record</div>
             <h2 className="stamp">Match Stats</h2>
           </div>
           <div className="public-badge">● Public</div>
