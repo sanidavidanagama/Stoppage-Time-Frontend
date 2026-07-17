@@ -2,15 +2,14 @@ function pct(n) {
   return `${Math.round((n ?? 0) * 100)}%`
 }
 
-const PICK_WORD = { home: 'Home Win', draw: 'Draw', away: 'Away Win' }
-
 // Three-segment probability bar for home/draw/away, used on the share card
-// and the live Decision panel. `pick` (home/draw/away) — when the agent
-// actually committed to an outcome, not skip/pending — gets called out as
-// its own high-contrast badge above the bar, not just a subtle style
-// difference in the legend below: the probability split alone doesn't tell
-// you what the agent decided to back, and that's the one thing this needs
-// to make unmistakable at a glance.
+// and the live Decision panel. When `pick` (home/draw/away) is set — the
+// agent actually committed to an outcome, not skip/pending — it's called
+// out as a plain text line above the bar, in the card's own label
+// typography (Oswald, same treatment as the stage line), plus a ring on
+// the winning segment. Probability alone doesn't say what the agent
+// backed, so this needs to be legible, but it doesn't need to look like a
+// sticker slapped on top of the design to get there.
 export default function ProbBar({ home, draw, away, pick, homeLabel, awayLabel, compact = false }) {
   const segments = [
     { key: 'home', value: home ?? 0, label: homeLabel || 'Home' },
@@ -23,15 +22,10 @@ export default function ProbBar({ home, draw, away, pick, homeLabel, awayLabel, 
   return (
     <div className="sc-probbar-wrap" style={compact ? { margin: '14px 0 10px' } : undefined}>
       {picked && (
-        <div className="prob-pick">
-          <span className="prob-pick-tag">Agent's Pick</span>
-          <span className="prob-pick-value">
-            {picked.key === 'draw' ? (
-              'Draw'
-            ) : (
-              <>{picked.label} <span className="prob-pick-word">({PICK_WORD[picked.key]})</span></>
-            )} · {pct(picked.value)}
-          </span>
+        <div className="prob-pick-line">
+          <span className="ppl-tag">Agent's Pick</span>
+          <span className="ppl-team">{picked.key === 'draw' ? 'Draw' : picked.label}</span>
+          <span className="ppl-pct">{pct(picked.value)}</span>
         </div>
       )}
       <div className="sc-probbar" style={compact ? { height: 16 } : undefined}>
