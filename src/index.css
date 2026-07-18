@@ -320,7 +320,7 @@ section{padding:64px 40px; max-width:1180px; margin:0 auto;}
 .day-step strong{color:var(--chalk);}
 
 .hiw-sources{list-style:none; margin:22px 0 0; padding:0; display:flex; flex-direction:column; gap:10px;}
-.hiw-sources li{font-family:'IBM Plex Mono'; font-size:13px;}
+.hiw-sources li{font-family:'IBM Plex Mono'; font-size:13px; overflow-wrap:break-word;}
 .hiw-sources a{color:var(--gold);}
 .hiw-sources a:hover{text-decoration:underline;}
 
@@ -417,4 +417,53 @@ footer{padding:50px 40px; text-align:center; color:var(--muted-2); font-size:12p
   }
   .mobile-menu-panel a.active{color:var(--gold);}
   .mobile-menu-panel .signout{color:var(--card-red); border-bottom:none;}
+
+  /* Cards were keeping their desktop 36px/26px padding on mobile, which on a
+     ~375px phone left barely 260px of usable width — tight enough that the
+     match-up heading below would overflow past the card edge. */
+  .fixture-card, .detail-card{padding:22px 18px;}
+  .phase-panel{padding:18px 16px;}
+  .auth-card{margin-top:30px;}
+
+  /* .matchup (team names in the fixture/detail header) is a plain flex row
+     with no wrap — at the desktop 24px size, two real team names plus both
+     flags routinely need more width than a padded mobile card has, and the
+     second name would run past the card edge. Shrinking the type and letting
+     it wrap is cheaper than redesigning the header for two lines. */
+  .detail-head{gap:10px;}
+  .matchup{font-size:18px; gap:8px; flex-wrap:wrap; row-gap:4px;}
+  .matchup img, .matchup .flag-fallback{width:22px; height:16px;}
+
+  /* stat-cell values were sized for a 4-column desktop grid; at 2 columns on
+     a phone the padding + 30px monospace digits left numbers like
+     "$-16.00" touching the cell's edge. */
+  .stat-cell{padding:18px 14px;}
+  .stat-cell .val{font-size:22px;}
+
+  /* .hero/.home-features/.home-teaser are plain <div>s, not <section>s, so
+     they never picked up the section{padding:44px 20px} rule above and kept
+     their full 40px desktop side padding on phones. */
+  .hero{padding:70px 20px 46px;}
+  .home-features{padding:0 20px;}
+  .home-teaser{padding:0 20px; gap:36px;}
+
+  /* The share card is a fixed 340px ticket-stub design (matches the
+     downloaded PNG) — clamp it instead of letting it push past the edges
+     on the narrowest phones, and give it less overlay padding to work with. */
+  .overlay{padding:16px;}
+  .share-card{width:100%; max-width:340px;}
+
+  /* The "no market data crosses here" wall reads left-to-right on desktop;
+     wrapped into a flex-wrap row on mobile it left a tall vertical divider
+     awkwardly parked beside the Reasoning card. Stacking it top-to-bottom
+     with a horizontal divider matches the same before/after story. */
+  .principle-flow{flex-direction:column; align-items:stretch;}
+  .principle-card{max-width:none;}
+  .principle-arrow{justify-content:center; transform:rotate(90deg); padding:2px 0;}
+  .principle-wall{min-width:0; padding:4px 0;}
+  .principle-wall span{
+    writing-mode:horizontal-tb; display:block; text-align:center;
+    border-left:none; border-right:none; border-top:2px dashed var(--gold-dim); border-bottom:2px dashed var(--gold-dim);
+    padding:8px 5px;
+  }
 }
