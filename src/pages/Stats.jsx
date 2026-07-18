@@ -53,6 +53,7 @@ export default function Stats() {
   })
 
   const pnl = data ? data.wallet_balance_usd - data.starting_balance_usd : null
+  const avgPnlPerBet = data && data.bets_placed ? pnl / data.bets_placed : null
 
   return (
     <Layout>
@@ -91,6 +92,11 @@ export default function Stats() {
               <StatCell label="Biggest Profit" value={money(data.biggest_profit_usd, { sign: true })} tone="up" />
               <StatCell label="Biggest Loss" value={money(data.biggest_loss_usd)} tone="down" />
               <StatCell label="Starting Balance" value={money(data.starting_balance_usd)} />
+              <StatCell
+                label="Avg P&L / Bet"
+                value={money(avgPnlPerBet, { sign: true })}
+                tone={avgPnlPerBet > 0 ? 'up' : avgPnlPerBet < 0 ? 'down' : ''}
+              />
             </div>
           </>
         )}
