@@ -1,252 +1,126 @@
 import { useQuery } from '@tanstack/react-query'
-import { getPublicStats } from '../api/public'
 import Layout from '../components/Layout'
-import StatCard from '../components/StatCard'
-import Countdown from '../components/Countdown'
-import { ActivityIcon, ClockIcon, ZapIcon } from '../components/Icons'
+import { getAgentStats } from '../api/stats'
+import { getHistory } from '../api/history'
+import { betStatus } from '../lib/betStatus'
 
-function countdownSeconds(iso) {
-  if (!iso) return null
-  return Math.max(0, Math.floor((new Date(iso) - Date.now()) / 1000))
+function money(n, { sign = false } = {}) {
+  if (n == null) return '—'
+  const s = sign && n > 0 ? '+' : ''
+  return `${s}$${n.toFixed(2)}`
 }
 
-function PageHeading({ children }) {
-  return (
-    <h1
-      className="text-xs font-semibold uppercase tracking-widest"
-      style={{ color: '#d1d4d1', letterSpacing: '0.18em' }}
-    >
-      {children}
-    </h1>
-  )
+function pct(n) {
+  if (n == null) return '—'
+  return `${n.toFixed(1)}%`
 }
 
-function WinLossChart({ won, lost }) {
-  const total = Math.max(won + lost, 1)
-  const maxH = 72
-  const wonH = Math.max(8, Math.round((won / total) * maxH))
-  const lostH = Math.max(8, Math.round((lost / total) * maxH))
-
+function StatCell({ label, value, tone }) {
   return (
-    <div
-      className="rounded-xl p-4"
-      style={{ backgroundColor: '#111111', border: '1px solid #1e1e1e' }}
-    >
-      <p
-        className="text-xs font-medium uppercase tracking-widest mb-4"
-        style={{ color: '#474a4a', letterSpacing: '0.1em' }}
-      >
-        Win / Loss
-      </p>
-      <div className="flex items-end gap-3" style={{ height: `${maxH + 28}px` }}>
-        {/* Won bar */}
-        <div className="flex-1 flex flex-col items-center justify-end gap-1.5">
-          <span className="text-xs font-bold" style={{ color: '#3cac3b' }}>{won}</span>
-          <div
-            className="w-full rounded-t transition-all"
-            style={{ height: `${wonH}px`, backgroundColor: '#3cac3b', opacity: 0.85 }}
-          />
-          <span className="text-xs font-medium uppercase" style={{ color: '#474a4a', letterSpacing: '0.08em', fontSize: '0.6rem' }}>
-            Won
-          </span>
-        </div>
-        {/* Lost bar */}
-        <div className="flex-1 flex flex-col items-center justify-end gap-1.5">
-          <span className="text-xs font-bold" style={{ color: '#e61d25' }}>{lost}</span>
-          <div
-            className="w-full rounded-t transition-all"
-            style={{ height: `${lostH}px`, backgroundColor: '#e61d25', opacity: 0.85 }}
-          />
-          <span className="text-xs font-medium uppercase" style={{ color: '#474a4a', letterSpacing: '0.08em', fontSize: '0.6rem' }}>
-            Lost
-          </span>
-        </div>
-      </div>
+    <div className="stat-cell">
+      <div className={`val mono ${tone ?? ''}`}>{value}</div>
+      <div className="lbl">{label}</div>
     </div>
   )
 }
 
-function WinRateDonut({ rate }) {
-  const pct = Math.min(100, Math.max(0, rate ?? 0))
-  const r = 15.9155
-  const circumference = 2 * Math.PI * r
-  const dashArray = `${(pct / 100) * circumference} ${circumference}`
-  const color = pct >= 55 ? '#3cac3b' : pct >= 40 ? '#d1d4d1' : '#e61d25'
-
+function SkeletonGrid({ cells = 4 }) {
   return (
-    <div
-      className="rounded-xl p-4"
-      style={{ backgroundColor: '#111111', border: '1px solid #1e1e1e' }}
-    >
-      <p
-        className="text-xs font-medium uppercase tracking-widest mb-4"
-        style={{ color: '#474a4a', letterSpacing: '0.1em' }}
-      >
-        Win Rate
-      </p>
-      <div className="flex items-center justify-center">
-        <div className="relative w-24 h-24">
-          <svg viewBox="0 0 36 36" className="w-full h-full -rotate-90">
-            <circle cx="18" cy="18" r={r} fill="none" stroke="#1e1e1e" strokeWidth="2.5" />
-            <circle
-              cx="18" cy="18" r={r}
-              fill="none"
-              stroke={color}
-              strokeWidth="2.5"
-              strokeDasharray={dashArray}
-              strokeLinecap="round"
-              style={{ transition: 'stroke-dasharray 0.6s ease' }}
-            />
-          </svg>
-          <div className="absolute inset-0 flex items-center justify-center">
-            <span className="text-lg font-bold" style={{ color }}>
-              {pct.toFixed(1)}%
-            </span>
-          </div>
+    <div className="stats-grid">
+      {Array.from({ length: cells }).map((_, i) => (
+        <div className="stat-cell" key={i}>
+          <div className="skeleton" style={{ height: 30, width: '60%', marginBottom: 10 }} />
+          <div className="skeleton" style={{ height: 11, width: '80%' }} />
         </div>
-      </div>
+      ))}
     </div>
   )
 }
+
+const FORM_CLASS = { win: 'w', loss: 'l', live: 'd', skipped: 'd', pending: 'd' }
+const FORM_LABEL = { win: 'W', loss: 'L', live: '•', skipped: 'S', pending: '•' }
 
 export default function Stats() {
   const { data, isLoading, isError } = useQuery({
-    queryKey: ['publicStats'],
-    queryFn: getPublicStats,
+    queryKey: ['agent-stats'],
+    queryFn: getAgentStats,
     refetchInterval: 30000,
   })
 
+  const { data: recent } = useQuery({
+    queryKey: ['history', 'recent-form'],
+    queryFn: () => getHistory({ limit: 10, offset: 0 }),
+  })
+
+  const pnl = data ? data.wallet_balance_usd - data.starting_balance_usd : null
+  const avgPnlPerBet = data && data.bets_placed ? pnl / data.bets_placed : null
+
   return (
     <Layout>
-      <div className="max-w-4xl mx-auto p-4 md:p-6">
-
-        <div className="flex items-center gap-2 mb-5">
-          <ActivityIcon size={14} style={{ color: '#d1d4d1' }} />
-          <PageHeading>Agent Performance</PageHeading>
+      <section className="page-fade">
+        <div className="section-head">
+          <div>
+            <div className="section-tag">The agent's real-money track record</div>
+            <h2 className="stamp">Match Stats</h2>
+          </div>
+          <div className="public-badge">● Public</div>
         </div>
 
-        {isLoading && (
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            {Array.from({ length: 6 }).map((_, i) => (
-              <div
-                key={i}
-                className="rounded-xl p-4 animate-pulse"
-                style={{ backgroundColor: '#111111', border: '1px solid #1e1e1e' }}
-              >
-                {/* Loading skeleton uses logo as a subtle watermark */}
-                <div className="h-3 rounded w-2/3 mb-3" style={{ backgroundColor: '#1e1e1e' }} />
-                <div className="h-7 rounded w-1/2" style={{ backgroundColor: '#1a1a1a' }} />
-              </div>
-            ))}
-          </div>
+        {isError && (
+          <div className="alert error">Couldn't load agent stats — the API may be unreachable.</div>
         )}
 
-        {isError && (
-          <div className="flex items-center gap-2.5 px-4 py-3 rounded-xl"
-            style={{ backgroundColor: 'rgba(230,29,37,0.08)', border: '1px solid rgba(230,29,37,0.2)' }}
-          >
-            <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: '#e61d25' }} />
-            <p className="text-xs font-medium" style={{ color: '#e61d25' }}>
-              Server error: Failed to load data
-            </p>
-          </div>
-        )}
+        {isLoading && <SkeletonGrid cells={4} />}
 
         {data && (
-          <div className="space-y-4">
-            {/* Stat cards */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              <StatCard
-                label="Bets Won"
-                value={data.bets_won}
-                accent="text-[#3cac3b]"
-              />
-              <StatCard
-                label="Bets Lost"
-                value={data.bets_lost}
-                accent="text-[#e61d25]"
-              />
-              <StatCard
-                label="Total P&L"
-                value={`${data.total_pnl >= 0 ? '+' : ''}$${data.total_pnl?.toFixed(2)}`}
-                accent={data.total_pnl >= 0 ? 'text-[#3cac3b]' : 'text-[#e61d25]'}
-              />
-              <StatCard
-                label="Balance"
-                value={`$${data.current_balance?.toFixed(2)}`}
-              />
+          <>
+            <div className="stats-grid">
+              <StatCell label="Cumulative P&L" value={money(pnl, { sign: true })} tone={pnl > 0 ? 'up' : pnl < 0 ? 'down' : ''} />
+              <StatCell label="Win Rate" value={pct(data.win_percentage)} />
+              <StatCell label="ROI (pooled)" value={pct(data.roi_percentage)} tone={data.roi_percentage > 0 ? 'up' : data.roi_percentage < 0 ? 'down' : ''} />
+              <StatCell label="Wallet Balance" value={money(data.wallet_balance_usd)} />
             </div>
 
-            {/* Charts row */}
-            {(data.bets_won != null && data.bets_lost != null) && (
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                <div className="col-span-2">
-                  <WinLossChart won={data.bets_won ?? 0} lost={data.bets_lost ?? 0} />
-                </div>
-                <div className="col-span-2 md:col-span-2">
-                  <WinRateDonut rate={data.win_rate} />
-                </div>
-              </div>
-            )}
+            <div className="stats-grid" style={{ marginTop: 1 }}>
+              <StatCell label="Bets Placed" value={data.bets_placed} />
+              <StatCell label="Bets Won" value={data.bets_won} tone="up" />
+              <StatCell label="Bets Lost" value={data.bets_lost} tone="down" />
+              <StatCell label="Bets Skipped" value={data.bets_skipped} />
+            </div>
 
-            {/* Agent status + countdown */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              {(() => {
-                const isActive = data.agent_status === 'active'
-                const dotColor = isActive ? '#3cac3b' : '#f5a623'
-                const labelColor = isActive ? '#3cac3b' : '#f5a623'
-                const label = isActive ? 'Active' : 'Idle'
+            <div className="stats-grid" style={{ marginTop: 1 }}>
+              <StatCell label="Biggest Profit" value={money(data.biggest_profit_usd, { sign: true })} tone="up" />
+              <StatCell label="Biggest Loss" value={money(data.biggest_loss_usd)} tone="down" />
+              <StatCell label="Starting Balance" value={money(data.starting_balance_usd)} />
+              <StatCell
+                label="Avg P&L / Bet"
+                value={money(avgPnlPerBet, { sign: true })}
+                tone={avgPnlPerBet > 0 ? 'up' : avgPnlPerBet < 0 ? 'down' : ''}
+              />
+            </div>
+          </>
+        )}
+
+        {recent?.items?.length > 0 && (
+          <div className="form-guide">
+            <div className="lbl">Last {recent.items.length} Bets</div>
+            <div className="form-row">
+              {recent.items.map((bet) => {
+                const status = betStatus(bet)
                 return (
                   <div
-                    className="rounded-xl p-4"
-                    style={{ backgroundColor: '#111111', border: '1px solid #1e1e1e' }}
+                    key={bet.id}
+                    className={`form-chip ${FORM_CLASS[status]}`}
+                    title={`${bet.home_team ?? '?'} vs ${bet.away_team ?? '?'} — ${status}`}
                   >
-                    <p
-                      className="text-xs font-medium uppercase tracking-widest mb-1"
-                      style={{ color: '#474a4a', letterSpacing: '0.1em' }}
-                    >
-                      Agent Status
-                    </p>
-                    <div className="flex items-center gap-2 mt-2">
-                      <span
-                        className={`w-2 h-2 rounded-full ${isActive ? 'animate-pulse' : ''}`}
-                        style={{ backgroundColor: dotColor }}
-                      />
-                      <span
-                        className="text-sm font-semibold uppercase tracking-wide"
-                        style={{ color: labelColor, letterSpacing: '0.08em' }}
-                      >
-                        {label}
-                      </span>
-                    </div>
+                    {FORM_LABEL[status]}
                   </div>
                 )
-              })()}
-
-              {data.next_scheduled_run && (
-                <div
-                  className="col-span-1 md:col-span-3 rounded-xl p-4"
-                  style={{ backgroundColor: '#111111', border: '1px solid #1e1e1e' }}
-                >
-                  <p
-                    className="text-xs font-medium uppercase tracking-widest mb-1 flex items-center gap-1.5"
-                    style={{ color: '#474a4a', letterSpacing: '0.1em' }}
-                  >
-                    <ClockIcon size={12} />
-                    Next Run
-                  </p>
-                  <p className="text-2xl font-bold mt-1" style={{ color: '#2a398d' }}>
-                    <Countdown seconds={countdownSeconds(data.next_scheduled_run)} />
-                  </p>
-                  <p className="text-xs mt-0.5" style={{ color: '#474a4a' }}>
-                    {new Date(data.next_scheduled_run).toLocaleString()}
-                  </p>
-                </div>
-              )}
+              })}
             </div>
           </div>
         )}
-      </div>
+      </section>
     </Layout>
   )
 }

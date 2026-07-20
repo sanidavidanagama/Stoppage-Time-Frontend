@@ -1,7 +1,10 @@
 import axios from 'axios'
 import Cookies from 'js-cookie'
 
-const API_URL = window.configs?.apiUrl || import.meta.env.VITE_API_URL
+const API_URL =
+  window.__APP_CONFIG__?.API_URL ||
+  import.meta.env.VITE_API_URL ||
+  'http://localhost:8000'
 
 const client = axios.create({
   baseURL: API_URL,
